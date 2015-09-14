@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html>
+<head>
+  	<title>Qld Government Analytics</title>
+	<link rel="stylesheet" type="text/css" href="style.css">
+	<link href='https://fonts.googleapis.com/css?family=Source+Sans+Pro:300' rel='stylesheet' type='text/css'>
+</head>
+<body>
+
+<div id="content">
+
+	<h1>
+	Queensland Government analytics
+	</h1>
+
+	<div id="area">
+	
+	<!-- Step 1: Create the containing elements. -->
+
+		<div id="auth">
+		<section id="auth-button"></section>
+		</div>
+
+		<div id="select">
+		<div id="divtitle">Sessions by day: <b>Last 30 days</b></div>
+		<section id="view-selector"></section>
+		<section id="timeline"></section>
+		</div>
+
+		<div id="select2">
+		<div id="divtitle">Sessions by location: <b>Last 7 days</b></div>
+		<section id="view-selector-2"></section>		
+		<section id="mapchart"></section>
+		</div>
+
+		<div id="select">
+		<div id="divtitle">Average Pageviews per Session: <b>Last 30 days</b></div>
+		<section id="view-selector-3"></section>
+		<section id="linechart"></section>
+		</div>
+
+		<div id="select2">
+		<div id="divtitle">Session by Device Type: <b>Last 30 days</b></div>
+		<section id="view-selector-4"></section>		
+		<section id="piechart"></section>
+		</div>
+
+
+	</div>
+
+</div>
+
+
+<!-- Step 2: Load the library. -->
+
+
+
+<script>
+(function(w,d,s,g,js,fjs){
+  g=w.gapi||(w.gapi={});g.analytics={q:[],ready:function(cb){this.q.push(cb)}};
+  js=d.createElement(s);fjs=d.getElementsByTagName(s)[0];
+  js.src='https://apis.google.com/js/platform.js';
+  fjs.parentNode.insertBefore(js,fjs);js.onload=function(){g.load('analytics')};
+}(window,document,'script'));
+</script>
+
+<script>
+gapi.analytics.ready(function() {
+
+  // Step 3: Authorize the user.
+
+  var CLIENT_ID = '627232566188-lhhh7og01ddia6bok6kdtg95bgdcvscr.apps.googleusercontent.com';
+
+  gapi.analytics.auth.authorize({
+    container: 'auth-button',
+    clientid: CLIENT_ID,
+  });
+
+  // Step 4: Create the view selector.
+
+  	var viewSelector = new gapi.analytics.ViewSelector({
+    	container: 'view-selector'
+  	});
+ 
+	var viewSelector2 = new gapi.analytics.ViewSelector({
+	container: 'view-selector-2'
+  	});
+
+	var viewSelector3 = new gapi.analytics.ViewSelector({
+	container: 'view-selector-3'
+  	});
+	
+	var viewSelector4 = new gapi.analytics.ViewSelector({
+	container: 'view-selector-4'
+  	});
+
+  // Step 5: Create the timeline chart.
+
+  var timeline = new gapi.analytics.googleCharts.DataChart({
+    reportType: 'ga',
+    query: {
+      	'dimensions': 'ga:date',
+      	'metrics': 'ga:sessions',
+      	'start-date': '30daysAgo',
+      	'end-date': 'today',
+	'filters': 'ga:region==Queensland',
+    },
+    chart: {
+      	type: 'LINE',
+      	container: 'timeline',
+	options: {
+	title: 'Daily Sessions',
+	curveType: 'function',
+	lineWidth: 0.5,
+	pointsVisible: 'false',
+	trendlines: { 
+		0: {
+		color: 'orange',
+		lineWidth: 2,
+       		opacity: 0.5,
+		type: 'exponential',
+		} 
+	     }		// Finish trendlines  	
+	} 		// Finish the chart options
+    } 			// Finish the chart section
+  }); 			// Finish the overal timeline chart section
+
+
+	var linechart = new gapi.analytics.googleCharts.DataChart({
+	reportType: 'ga',    	
+	query: {
+		'metrics': 'ga:pageviewsPerSession',
+      		'dimensions': 'ga:date',
+   		'start-date': '30daysAgo',
+      		'end-date': 'today',
+		'filters': 'ga:region==Queensland',	
+    	},
+    	chart: {
+      		container: 'linechart',
+      		type: 'LINE',
+      		options: {
+		width: '100%',
+		curveType: 'function',
+		lineWidth: 0.5,
+		pointsVisible: 'false',
+		trendlines: { 
+			0: 	{
+			color: 'orange',
+			lineWidth: 2,
+       			opacity: 0.5,
+			type: 'exponential',
+			} 
+	     	    }
+                }
+	  }
+      	});
+
+
+	var piechart = new gapi.analytics.googleCharts.DataChart({
+    	query: {
+	'metrics': 'ga:sessions',
+      	'dimensions': 'ga:deviceCategory',
+   	'start-date': '30daysAgo',
+      	'end-date': 'today',
+	'max-results': 5,
+	sort: '-ga:sessions',
+	'filters': 'ga:region==Queensland',	
+    },
+    chart: {
+      container: 'piechart',
+      type: 'PIE',
+      options: {
+  	width: '100%',
+	pieHole: 2/9,
+	}
+    }
+  });
+
+
+
+	var mapchart = new gapi.analytics.googleCharts.DataChart({
+    	query: {
+	'metrics': 'ga:sessions',
+      	'dimensions': 'ga:city',
+   	'start-date': '30daysAgo',
+      	'end-date': 'today',
+	'sort': '-ga:sessions',
+	'max-results': 10,
+	'filters': 'ga:region==Queensland',	
+    },
+    chart: {
+      container: 'mapchart',
+      type: 'GEO',
+      options: {
+        title: 'Map of Sessions by Location',
+	width: '100%',
+	region: 'AU',
+	displayMode: 'markers',
+	markerOpacity: 0.7,
+        colorAxis: {colors: ['#ff6600', '#ff9900']},
+	}
+    }
+  });
+
+
+
+  // Step 6: Hook up the components to work together.
+  
+  gapi.analytics.auth.on('success', function(response) {
+    	viewSelector.execute();
+    	viewSelector2.execute();
+	viewSelector3.execute();
+	viewSelector4.execute();
+  });
+ 
+  viewSelector.on('change', function(ids) {
+    var newIds = {
+      query: {ids: ids}}
+    timeline.set(newIds).execute();
+  });
+  
+	viewSelector2.on('change', function(ids) {
+    mapchart.set({query: {ids: ids}}).execute();
+  });  
+
+	viewSelector3.on('change', function(ids) {
+    linechart.set({query: {ids: ids}}).execute();
+  }); 
+
+	viewSelector4.on('change', function(ids) {
+    piechart.set({query: {ids: ids}}).execute();
+  }); 
+
+
+});
+</script>
+</body>
+</html>
